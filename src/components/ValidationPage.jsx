@@ -9,9 +9,11 @@ export default function ValidationPage() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [scannerActive, setScannerActive] = useState(false);
+  const [scannerMessage, setScannerMessage] = useState("");
   const videoRef = useRef(null);
   const scannerControlsRef = useRef(null);
   const busyRef = useRef(false);
+  const invalidQrRef = useRef(false);
 
   const validatePass = useCallback(async (passCode) => {
     if (busyRef.current) return;
@@ -60,21 +62,28 @@ export default function ValidationPage() {
       try {
         const { BrowserQRCodeReader } = await import("@zxing/browser");
         if (cancelled) return;
+        if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+          throw new Error("Camera access requires HTTPS or localhost. Open this page over a secure connection.");
+        }
         reader = new BrowserQRCodeReader();
-        const controls = await reader.decodeFromConstraints(
-          { video: { facingMode: { ideal: "environment" } } },
+        const controls = await reader.decodeFromVideoDevice(
+          undefined,
           videoRef.current,
           (decoded, _scanError, scanControls) => {
             if (!decoded || busyRef.current) return;
 
             const scannedCode = decoded.getText().trim().toUpperCase();
             if (!/^SS-2026-(?:[A-Z0-9]{1,4}|GUEST)-[A-F0-9]{20}$/.test(scannedCode)) {
-              setError("This QR code does not contain a guest pass. Keep the code in view or enter it manually.");
+              if (!invalidQrRef.current) {
+                invalidQrRef.current = true;
+                setError("QR detected, but it does not contain a guest pass code. Try another QR code or enter the pass code manually.");
+              }
               return;
             }
 
             scanControls.stop();
             setScannerActive(false);
+            setScannerMessage("");
             setCode(scannedCode);
             void validatePass(scannedCode);
           },
@@ -84,14 +93,22 @@ export default function ValidationPage() {
           controls.stop();
         } else {
           scannerControlsRef.current = controls;
+          setScannerMessage("Camera is ready. Point it at the guest's QR code.");
         }
       } catch (scanError) {
         if (!cancelled) {
+          const cameraErrorMessages = {
+            NotAllowedError: "Camera access was denied. Allow camera permission in your browser settings, then try again.",
+            NotFoundError: "No camera was found on this device.",
+            NotReadableError: "The camera is already in use by another app. Close it and try again.",
+            OverconstrainedError: "No compatible camera was found on this device.",
+          };
           setError(
             scanError instanceof Error
-              ? `Could not start the camera: ${scanError.message}`
+              ? cameraErrorMessages[scanError.name] || `Could not start the camera: ${scanError.message}`
               : "Could not start the camera. Allow camera access or enter the code manually.",
           );
+          setScannerMessage("");
           setScannerActive(false);
         }
       }
@@ -152,9 +169,13 @@ export default function ValidationPage() {
                   playsInline
                   ref={videoRef}
                 />
+                <p className="text-center text-xs text-[#78686a]" role="status">{scannerMessage}</p>
                 <button
                   className="w-full rounded-full border border-[#8c3d53] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#6f1d35] transition hover:bg-[#f3e7d2]"
-                  onClick={() => setScannerActive(false)}
+                  onClick={() => {
+                    setScannerMessage("");
+                    setScannerActive(false);
+                  }}
                   type="button"
                 >
                   Stop camera
@@ -166,6 +187,8 @@ export default function ValidationPage() {
                 disabled={!adminToken.trim() || busy}
                 onClick={() => {
                   setError("");
+                  setScannerMessage("Starting camera…");
+                  invalidQrRef.current = false;
                   setScannerActive(true);
                 }}
                 type="button"
@@ -178,7 +201,7 @@ export default function ValidationPage() {
               disabled={busy}
               type="submit"
             >
-              <Search className="cursor-pointer " size={15} /> {busy ? "Checking…" : "Validate & check in"}
+              <Search className="cursor-pointer" size={15} /> {busy ? "Checking…" : "Validate & check in"}
             </button>
           </form>
 
