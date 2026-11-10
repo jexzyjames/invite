@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/wedding", "destination": "/" },
+    { "source": "/validate", "destination": "/" }
+  ]
+}
