@@ -73,14 +73,23 @@ export default function WeddingInvitation({ onOpen }) {
           onClick={handleOpen}
         >
           {/* Wax Seal / Heart Button on Flap Tip */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-40">
-            <motion.div
+          <div className="group absolute bottom-4 left-1/2 z-40 -translate-x-1/2">
+            <motion.button
+              aria-label="Open invitation"
+              onClick={handleOpen}
+              title="Open invitation"
+              type="button"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-rose-100/50 bg-[#54172b] text-white shadow-lg"
+              className="flex h-12 w-12 cursor-pointer items-center justify-center rounded-full border-2 border-rose-100/50 bg-[#54172b] text-white shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#fff0d6]"
             >
-              <span className="text-xs font-bold tracking-tighter mr-0.5">SS</span>
-            </motion.div>
+              <span className="text-xs font-bold tracking-tighter mr-0.5">SS'</span>
+              <span className="text-xs font-bold tracking-tighter">26</span>
+              
+            </motion.button>
+            <span className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-full border border-[#d6bd91]/50 bg-[#2b101c] px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.14em] text-[#fff0d6] opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+              Tap to open
+            </span>
           </div>
         </motion.div>
       </div>

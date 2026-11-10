@@ -86,6 +86,43 @@ export default function WeddingPage() {
           </p>
         </header>
 
+        <svg
+          aria-label="An open wedding invitation envelope"
+          className="mx-auto mb-8 w-64 drop-shadow-[0_18px_24px_rgba(20,5,12,0.3)] sm:w-72"
+          fill="none"
+          role="img"
+          viewBox="0 0 320 200"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <defs>
+            <linearGradient id="envelope-paper" x1="68" x2="252" y1="26" y2="158" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#fffaf0" />
+              <stop offset="1" stopColor="#eadbc8" />
+            </linearGradient>
+            <linearGradient id="envelope-fabric" x1="28" x2="292" y1="82" y2="178" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#bd7d7a" />
+              <stop offset="1" stopColor="#762d45" />
+            </linearGradient>
+          </defs>
+          <ellipse cx="160" cy="184" fill="#1e0912" fillOpacity=".3" rx="116" ry="10" />
+          <path d="M22 80 160 13l138 67-138 73L22 80Z" fill="#a45a66" stroke="#d6bd91" strokeOpacity=".7" strokeWidth="2" />
+          <rect fill="url(#envelope-paper)" height="137" rx="4" width="184" x="68" y="24" />
+          <text fill="#9b7071" fontFamily="Georgia,serif" fontSize="10" letterSpacing="2.2" textAnchor="middle" x="160" y="65">
+            YOU&apos;RE INVITED
+          </text>
+          <text fill="#54172b" fontFamily="Georgia,serif" fontSize="21" textAnchor="middle" x="160" y="96">
+            Sarah &amp; Samson
+          </text>
+          <path d="M132 108h56" stroke="#b88d68" />
+          <text fill="#78686a" fontFamily="Georgia,serif" fontSize="10" letterSpacing="1.5" textAnchor="middle" x="160" y="128">
+            14 · 11 · 2026
+          </text>
+          <rect fill="url(#envelope-fabric)" height="96" rx="5" width="276" x="22" y="77" />
+          <path d="m22 80 138 77L298 80v87a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V80Z" fill="url(#envelope-fabric)" stroke="#d6bd91" strokeOpacity=".65" strokeWidth="2" />
+          <circle cx="160" cy="143" fill="#54172b" r="18" stroke="#e8d4b0" strokeWidth="2" />
+          <path d="M160 151s-8-4.9-8-10.2a4.2 4.2 0 0 1 8-1.8 4.2 4.2 0 0 1 8 1.8c0 5.3-8 10.2-8 10.2Z" fill="#fff0d6" />
+        </svg>
+
         <section className="rounded-3xl border border-[#e2d3bb] bg-[#f7efdf] p-6 shadow-[0_24px_70px_-38px_rgba(20,5,12,0.75)] sm:p-9">
           <aside className="mb-6 rounded-2xl border border-[#ddc9aa] bg-[#fffaf0] p-4 text-center">
             <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8e5c62]">

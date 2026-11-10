@@ -56,7 +56,6 @@ export default function ValidationPage() {
     if (!scannerActive) return undefined;
 
     let cancelled = false;
-    let reader;
 
     const startScanner = async () => {
       try {
@@ -65,7 +64,7 @@ export default function ValidationPage() {
         if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
           throw new Error("Camera access requires HTTPS or localhost. Open this page over a secure connection.");
         }
-        reader = new BrowserQRCodeReader();
+        const reader = new BrowserQRCodeReader();
         const controls = await reader.decodeFromVideoDevice(
           undefined,
           videoRef.current,
@@ -120,7 +119,6 @@ export default function ValidationPage() {
       cancelled = true;
       scannerControlsRef.current?.stop();
       scannerControlsRef.current = null;
-      reader?.reset();
     };
   }, [scannerActive, validatePass]);
 
