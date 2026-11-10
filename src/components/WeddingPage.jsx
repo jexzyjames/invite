@@ -59,6 +59,19 @@ export default function WeddingPage() {
         </header>
 
         <section className="rounded-3xl border border-[#e2d3bb] bg-[#f7efdf] p-6 shadow-[0_24px_70px_-38px_rgba(20,5,12,0.75)] sm:p-9">
+          <aside className="mb-6 rounded-2xl border border-[#ddc9aa] bg-[#fffaf0] p-4 text-center">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#8e5c62]">
+              RSVP questions?
+            </p>
+            <div className="mt-3 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-[#54172b]">
+              <a className="underline decoration-[#b88d68] underline-offset-4" href="tel:7045666940">
+                James · 704 566 6940
+              </a>
+              <a className="underline decoration-[#b88d68] underline-offset-4" href="tel:08124331443">
+                Sandra · 0812 433 1443
+              </a>
+            </div>
+          </aside>
           {!pass ? (
             <form className="space-y-5" onSubmit={submit}>
               <label className="block text-xs font-medium text-[#684e52]">

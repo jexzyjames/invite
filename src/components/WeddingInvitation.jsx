@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, MapPin } from "lucide-react";
 
 export default function WeddingInvitation({ onOpen }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -10,7 +10,7 @@ export default function WeddingInvitation({ onOpen }) {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#2b101c] p-4 font-sans text-[#fff8ed]">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-x-hidden bg-[#2b101c] px-4 py-10 font-sans text-[#fff8ed]">
       {/* Background subtle radial glow / orbit lines */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20">
         <div className="absolute h-[600px] w-[600px] rounded-full border border-rose-200/20" />
@@ -96,6 +96,24 @@ export default function WeddingInvitation({ onOpen }) {
         <span>Open Our Invitation</span>
         <ChevronDown className="w-4 h-4 transform group-hover:translate-y-0.5 transition-transform" />
       </motion.button>
+
+      <section className="mt-10 w-full max-w-md rounded-2xl border border-[#d6bd91]/30 bg-[#fff8ed]/[0.06] p-5 text-center sm:p-6">
+        <MapPin className="mx-auto text-[#e2c99e]" size={20} />
+        <h2 className="mt-3 font-serif text-lg text-[#fff0d6]">Venue &amp; directions</h2>
+        <p className="mt-2 text-sm text-[#fff8ed]">19 Bawala Street, Pedro, Bariga, Lagos</p>
+        <p className="mt-1 text-xs text-rose-100/70">Bariga Local Council Development Area Secretariat</p>
+        <p className="mt-2 text-xs leading-5 text-rose-100/75">
+          Find your way to Palmgroove or Bariga, then take a napep to the venue.
+        </p>
+        <a
+          className="mt-4 inline-block text-xs uppercase tracking-[0.16em] text-[#e2c99e] underline underline-offset-4 hover:text-white"
+          href="https://www.google.com/maps/search/?api=1&query=Bariga+Local+Council+Development+Area+Secretariat%2C+19+Bawala+Street%2C+Pedro%2C+Bariga%2C+Lagos"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Open in Google Maps
+        </a>
+      </section>
     </div>
   );
 }
