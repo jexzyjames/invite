@@ -27,10 +27,15 @@ export default async function handler(req, res) {
 
   const body = readJsonBody(req);
   const name = typeof body?.name === "string" ? body.name.trim() : "";
+  const partnerName = typeof body?.partnerName === "string" ? body.partnerName.trim() : "";
   const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
   const phone = typeof body?.phone === "string" ? body.phone.trim() : "";
+  const guestNames = partnerName ? `${name} & ${partnerName}` : name;
 
   if (!name || name.length > 120) return json(res, 400, { error: "Enter a valid name." });
+  if (partnerName.length > 120 || guestNames.length > 120) {
+    return json(res, 400, { error: "Keep both names within 120 characters combined." });
+  }
   if (!emailPattern.test(email) || email.length > 254) {
     return json(res, 400, { error: "Enter a valid email address." });
   }
@@ -44,11 +49,11 @@ export default async function handler(req, res) {
 
     let code;
     for (let attempt = 0; attempt < 3; attempt += 1) {
-      code = `SS-2026-${getNameTag(name)}-${randomBytes(10).toString("hex").toUpperCase()}`;
+      code = `SS-2026-${getNameTag(guestNames)}-${randomBytes(10).toString("hex").toUpperCase()}`;
       try {
         await database`
           INSERT INTO guest_passes (name, email, phone, pass_code)
-          VALUES (${name}, ${email}, ${phone}, ${code})
+          VALUES (${guestNames}, ${email}, ${phone}, ${code})
         `;
         break;
       } catch (error) {
@@ -56,7 +61,7 @@ export default async function handler(req, res) {
       }
     }
 
-    return json(res, 201, { name, code });
+    return json(res, 201, { name: guestNames, guestCount: partnerName ? 2 : 1, code });
   } catch (error) {
     console.error("Could not create guest pass", error);
     if (error.message === "DATABASE_NOT_CONFIGURED") {

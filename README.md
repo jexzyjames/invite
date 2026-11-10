@@ -24,9 +24,11 @@ Set `DATABASE_URL` (or `POSTGRES_URL`) and `CHECKIN_ADMIN_TOKEN` in Vercel's pro
 
 ## Attendee and host flow
 
-- Attendees enter their name, email, and phone to receive a personalized card with a random access code.
-- The code is stored in the database; it cannot be validated by merely copying or inventing a code.
-- A host opens `/validate`, enters the check-in key and guest code, and the server atomically marks the pass as used. Repeated scans are rejected.
+- Attendees enter their name, email, and phone to receive a personalized pass; they can optionally add a partner to share one pass for two people.
+- A couple's shared pass is checked in once and stores both names with one contact email and phone number.
+- The code is stored in the database; it cannot be validated by merely inventing a code. Each pass also displays a QR code containing that code.
+- A host opens `/validate`, enters the check-in key, and either scans the guest's QR code or enters the pass code manually. The server atomically marks the pass as used. Repeated scans are rejected.
+- QR scanning uses the host device's camera and requires camera permission and a secure connection (HTTPS).
 
 Pass codes prevent an issued pass from being copied and accepted twice. Since this flow intentionally lets anyone submit details and receive a pass, it does not verify that a person's identity was invited; preventing that requires an invite list or host approval before issuing codes.
 

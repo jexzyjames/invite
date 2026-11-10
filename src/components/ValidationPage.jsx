@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Check, Search, ShieldCheck, X } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Camera, Check, Search, ShieldCheck, X } from "lucide-react";
 import { readApiResponse } from "../lib/api";
 
 export default function ValidationPage() {
@@ -8,9 +8,14 @@ export default function ValidationPage() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [scannerActive, setScannerActive] = useState(false);
+  const videoRef = useRef(null);
+  const scannerControlsRef = useRef(null);
+  const busyRef = useRef(false);
 
-  const validate = async (event) => {
-    event.preventDefault();
+  const validatePass = useCallback(async (passCode) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
     setResult(null);
     setError("");
@@ -22,23 +27,85 @@ export default function ValidationPage() {
           "Content-Type": "application/json",
           "X-Checkin-Token": adminToken,
         },
-        body: JSON.stringify({ code: code.trim().toUpperCase() }),
+        body: JSON.stringify({ code: passCode.trim().toUpperCase() }),
       });
       const data = await readApiResponse(response);
 
       if (!response.ok) {
         setError(data.error || "Could not validate this pass.");
-        return;
+      } else {
+        setResult(data);
+        setCode("");
       }
-
-      setResult(data);
-      setCode("");
     } catch {
       setError("Could not reach the validation service. Please try again.");
     } finally {
       setBusy(false);
+      busyRef.current = false;
     }
+  }, [adminToken]);
+
+  const validate = (event) => {
+    event.preventDefault();
+    void validatePass(code);
   };
+
+  useEffect(() => {
+    if (!scannerActive) return undefined;
+
+    let cancelled = false;
+    let reader;
+
+    const startScanner = async () => {
+      try {
+        const { BrowserQRCodeReader } = await import("@zxing/browser");
+        if (cancelled) return;
+        reader = new BrowserQRCodeReader();
+        const controls = await reader.decodeFromConstraints(
+          { video: { facingMode: { ideal: "environment" } } },
+          videoRef.current,
+          (decoded, _scanError, scanControls) => {
+            if (!decoded || busyRef.current) return;
+
+            const scannedCode = decoded.getText().trim().toUpperCase();
+            if (!/^SS-2026-(?:[A-Z0-9]{1,4}|GUEST)-[A-F0-9]{20}$/.test(scannedCode)) {
+              setError("This QR code does not contain a guest pass. Keep the code in view or enter it manually.");
+              return;
+            }
+
+            scanControls.stop();
+            setScannerActive(false);
+            setCode(scannedCode);
+            void validatePass(scannedCode);
+          },
+        );
+
+        if (cancelled) {
+          controls.stop();
+        } else {
+          scannerControlsRef.current = controls;
+        }
+      } catch (scanError) {
+        if (!cancelled) {
+          setError(
+            scanError instanceof Error
+              ? `Could not start the camera: ${scanError.message}`
+              : "Could not start the camera. Allow camera access or enter the code manually.",
+          );
+          setScannerActive(false);
+        }
+      }
+    };
+
+    void startScanner();
+
+    return () => {
+      cancelled = true;
+      scannerControlsRef.current?.stop();
+      scannerControlsRef.current = null;
+      reader?.reset();
+    };
+  }, [scannerActive, validatePass]);
 
   return (
     <main className="min-h-screen bg-[#4b1027] px-4 py-12 text-[#f7efdf] sm:px-6 sm:py-16">
@@ -49,7 +116,7 @@ export default function ValidationPage() {
           </div>
           <p className="text-[10px] uppercase tracking-[0.3em] text-[#dec79f]">Sarah &amp; Samson</p>
           <h1 className="mt-2 font-serif text-4xl text-[#fff7e8]">Guest check-in</h1>
-          <p className="mt-3 text-sm text-[#e2d3c3]">Enter a guest pass code to validate and check in its holder.</p>
+          <p className="mt-3 text-sm text-[#e2d3c3]">Scan a guest pass QR code or enter its code to validate and check in its holder.</p>
         </header>
 
         <section className="rounded-3xl border border-[#e2d3bb] bg-[#f7efdf] p-6 text-[#342326] shadow-[0_24px_70px_-38px_rgba(20,5,12,0.75)] sm:p-8">
@@ -76,12 +143,42 @@ export default function ValidationPage() {
                 onChange={(event) => setCode(event.target.value)}
               />
             </label>
+            {scannerActive ? (
+              <div className="space-y-3">
+                <video
+                  autoPlay
+                  className="w-full rounded-xl bg-black"
+                  muted
+                  playsInline
+                  ref={videoRef}
+                />
+                <button
+                  className="w-full rounded-full border border-[#8c3d53] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#6f1d35] transition hover:bg-[#f3e7d2]"
+                  onClick={() => setScannerActive(false)}
+                  type="button"
+                >
+                  Stop camera
+                </button>
+              </div>
+            ) : (
+              <button
+                className="flex w-full items-center justify-center gap-2 rounded-full border border-[#8c3d53] px-5 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-[#6f1d35] transition hover:bg-[#f3e7d2] disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!adminToken.trim() || busy}
+                onClick={() => {
+                  setError("");
+                  setScannerActive(true);
+                }}
+                type="button"
+              >
+                <Camera size={15} /> Scan guest QR code
+              </button>
+            )}
             <button
               className="flex w-full items-center justify-center gap-2 rounded-full bg-[#6f1d35] px-5 py-3.5 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#54172b] disabled:cursor-wait disabled:opacity-60"
               disabled={busy}
               type="submit"
             >
-              <Search size={15} /> {busy ? "Checking…" : "Validate & check in"}
+              <Search className="cursor-pointer " size={15} /> {busy ? "Checking…" : "Validate & check in"}
             </button>
           </form>
 
@@ -112,7 +209,7 @@ export default function ValidationPage() {
           )}
 
           <p className="mt-5 text-xs leading-5 text-[#78686a]">
-            A valid pass is marked used immediately. Re-entering a copied or already-used code will be rejected.
+            Scanning requires camera permission and a secure connection (HTTPS). A valid pass is marked used immediately; copied or already-used passes will be rejected.
           </p>
         </section>
         <footer className="mt-8 text-center text-xs text-[#dec79f]">
