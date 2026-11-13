@@ -11,7 +11,6 @@ export default function ValidationPage() {
   const [scannerActive, setScannerActive] = useState(false);
   const [scannerMessage, setScannerMessage] = useState("");
   const videoRef = useRef(null);
-  const scannerControlsRef = useRef(null);
   const busyRef = useRef(false);
   const invalidQrRef = useRef(false);
 
@@ -56,6 +55,25 @@ export default function ValidationPage() {
     if (!scannerActive) return undefined;
 
     let cancelled = false;
+    let scannerControls;
+    let stoppedControls;
+
+    const stopScanner = (controls) => {
+      if (!controls || controls === stoppedControls) return;
+
+      stoppedControls = controls;
+      if (scannerControls === controls) scannerControls = null;
+      try {
+        const stopResult = controls.stop();
+        if (stopResult && typeof stopResult.then === "function") {
+          void stopResult.catch((stopError) => {
+            console.error("Could not stop the QR scanner cleanly.", stopError);
+          });
+        }
+      } catch (stopError) {
+        console.error("Could not stop the QR scanner cleanly.", stopError);
+      }
+    };
 
     const startScanner = async () => {
       try {
@@ -80,7 +98,7 @@ export default function ValidationPage() {
               return;
             }
 
-            scanControls.stop();
+            stopScanner(scanControls);
             setScannerActive(false);
             setScannerMessage("");
             setCode(scannedCode);
@@ -88,10 +106,10 @@ export default function ValidationPage() {
           },
         );
 
-        if (cancelled) {
-          controls.stop();
+        if (cancelled || stoppedControls === controls) {
+          stopScanner(controls);
         } else {
-          scannerControlsRef.current = controls;
+          scannerControls = controls;
           setScannerMessage("Camera is ready. Point it at the guest's QR code.");
         }
       } catch (scanError) {
@@ -114,11 +132,9 @@ export default function ValidationPage() {
     };
 
     void startScanner();
-
     return () => {
       cancelled = true;
-      scannerControlsRef.current?.stop();
-      scannerControlsRef.current = null;
+      stopScanner(scannerControls);
     };
   }, [scannerActive, validatePass]);
 
