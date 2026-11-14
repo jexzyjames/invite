@@ -261,7 +261,7 @@ export default function WeddingPage() {
               <p className="mt-2 text-xs uppercase tracking-[0.16em] text-[#8e5c62]">
                 Engagement Celebration
               </p>
-              <p className="mt-1 text-sm text-[#59474a]">Saturday, 14 November 2026</p>
+              <p className="mt-1 text-sm text-[#59474a]">Saturday, 14 November 2026 <span className="font-semibold  ">11:00 AM</span></p>
               <div className="mx-auto mt-7 flex max-w-xs items-center justify-center gap-2 rounded-xl border border-[#d6bd91]/20 bg-[#54172b] px-4 py-4 text-[#fff8ed] shadow-md">
                 <Ticket size={17} />
                 <span className="break-all font-mono text-sm tracking-[0.12em]">{pass.code}</span>
